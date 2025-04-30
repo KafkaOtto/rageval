@@ -41,7 +41,6 @@ def load_data_in_batches(dataset_path: str,
             for line in file:
                 try:
                     item = json.loads(line)
-                    print(f"item: {item.keys()}")
                     for key in batch:
                         batch[key].append(item[key])
 

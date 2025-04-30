@@ -6,5 +6,5 @@
   "output_dir": "results/",
   "llm_api": "RAG",
   "metadata": "name=benchmark,version=1",
-  "batch_size": 3000
+  "batch_size": 3
 }
