@@ -101,8 +101,8 @@ def get_accuracies_latencies(
         if not (iter % num_concurrent_requests) or iter == max_num_completed_requests:
             outs = req_launcher.get_next_ready()
             completed_requests.extend(outs)
+            num_completed_requests += len(outs)
         pbar.update(len(completed_requests) - num_completed_requests)
-        num_completed_requests += len(completed_requests)
     pbar.close()
     end_time = time.time()
     total_elapsed_time = end_time - start_time
