@@ -18,7 +18,7 @@ def construct_prometheus_command(pod_name, start_time, end_time, filename, step=
         raise ValueError(f"Start time must be specified")
     if end_time is None:
         raise ValueError(f"End time must be specified")
-    return f"kubectl exec {pod_name} -- wget -qO- 'http://localhost:9090/api/v1/query_range?query=kepler_container_joules_total&start={start_time}&end={end_time}&step=1' > {filename}"
+    return f"kubectl exec -n monitoring {pod_name} -- wget -qO- 'http://localhost:9090/api/v1/query_range?query=kepler_container_joules_total&start={start_time}&end={end_time}&step=1' > {filename}"
 
 def collect_energy(pod_name_start = 'prometheus-prometheus-kube-prometheus-prometheus', start_time = None, end_time = None, filename = None, step="1s"):
     if filename is None:
