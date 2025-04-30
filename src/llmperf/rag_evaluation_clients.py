@@ -1,15 +1,10 @@
-import threading
 import argparse
-from collections.abc import Iterable
 import json
 import os
 from pathlib import Path
-import re
 import time
 import random
 from typing import Any, Dict, List, Optional, Tuple
-
-import pandas as pd
 import ray
 
 from llmperf import common_metrics
@@ -21,6 +16,7 @@ from llmperf.utils import (
     LLMPerfResults,
     sample_random_positive_int,
 )
+from llmperf.energy_collection import collect_energy
 from tqdm import tqdm
 
 from data_loader import load_data_in_batches
@@ -78,7 +74,7 @@ def get_accuracies_latencies(
 
     prompts = dataset["query"]
     answers = dataset["answer"]
-    max_num_completed_requests = len(prompts)
+    max_num_completed_requests = 5
 
     start_time = time.time()
     pbar = tqdm(total=max_num_completed_requests)
@@ -155,6 +151,7 @@ def run_batch(model: str,
         filename = f"{model}_batch_{batch_size}_{batch_id}_{treatment_id}"
         summary_file_name = f"{filename}_summary"
         responses_file_name = f"{filename}_responses"
+        energy_file_name = f"{filename}_energy"
         if not rerun and check_results_exist_and_pass(output_dir, summary_file_name, responses_file_name):
             print(f"current batch: {filename} is successful")
             continue
@@ -173,7 +170,7 @@ def run_batch(model: str,
         print(summary_metrics)
         print("Raw results:")
         print(raw_results)
-        save_results(output_dir, summary_file_name, responses_file_name, raw_results, summary_metrics)
+        save_results(output_dir, energy_file_name, summary_file_name, responses_file_name, raw_results, summary_metrics)
 
 def check_results_exist_and_pass(output_dir,
                  summary_filename,
@@ -202,28 +199,47 @@ def check_results_exist_and_pass(output_dir,
     return True
 
 def save_results(output_dir,
+                 energy_file_name,
                  summary_filename,
                  responses_filename,
                  response_results,
                  summary_metrics):
-    summary_results = LLMPerfResults(name=summary_filename, metadata=summary_metrics)
     output_dir = Path(output_dir)
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
     elif not output_dir.is_dir():
         raise ValueError(f"{output_dir} is not a directory")
-    try:
-        with open(output_dir / f"{summary_filename}.json", "w") as f:
-            json.dump(summary_results.to_dict(), f, indent=4, default=str)
-    except Exception as e:
-        print(summary_results.to_dict())
-        raise e
+    save_summary_results(output_dir, summary_filename, summary_metrics)
 
     try:
         with open(output_dir / f"{responses_filename}.json", "w") as f:
             json.dump(response_results, f, indent=4)
     except Exception as e:
         print(response_results)
+        raise e
+    save_energy_results(output_dir,
+                 energy_filename=energy_file_name,
+                 summary_metrics=summary_metrics)
+
+def save_energy_results(output_dir,
+                 energy_filename,
+                 summary_metrics):
+    full_path = output_dir / energy_filename
+    start_time = summary_metrics["start_time"]
+    end_time = summary_metrics["end_time"]
+    collect_energy(start_time = start_time,
+                   end_time = end_time,
+                   filename = full_path)
+
+def save_summary_results(output_dir,
+                 summary_filename,
+                 summary_metrics):
+    summary_results = LLMPerfResults(name=summary_filename, metadata=summary_metrics)
+    try:
+        with open(output_dir / f"{summary_filename}.json", "w") as f:
+            json.dump(summary_results.to_dict(), f, indent=4, default=str)
+    except Exception as e:
+        print(summary_results.to_dict())
         raise e
 
 def load_config(config_path):
