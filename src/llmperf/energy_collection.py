@@ -2,7 +2,7 @@ import subprocess
 
 def find_pod(pod_name_start):
     result = subprocess.run(
-        ["kubectl", "get", "pods", "--no-headers", "-o", "custom-columns=:metadata.name"],
+        ["kubectl", "get", "pods", "--no-headers", "-o", "custom-columns=:metadata.name", "-A"],
         capture_output=True,
         text=True,
         check=True
