@@ -1,0 +1,10 @@
+{
+  "model": "RAG",
+  "num_concurrent_requests": 2,
+  "timeout": 9000000,
+  "input_dir": "../dataset/crag_task_1_and_2_dev_v4.jsonl.bz2",
+  "output_dir": "results/",
+  "llm_api": "RAG",
+  "metadata": "name=benchmark,version=1",
+  "batch_size": 3
+}

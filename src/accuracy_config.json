@@ -1,0 +1,9 @@
+{
+  "model": "deepseek-chat",
+  "num_concurrent_requests": 2,
+  "timeout": 9000000,
+  "input_dir": "results",
+  "output_dir": "results",
+  "llm_api": "openai_acc",
+  "metadata": ""
+}
