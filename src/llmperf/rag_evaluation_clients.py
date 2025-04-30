@@ -102,7 +102,7 @@ def get_accuracies_latencies(
             outs = req_launcher.get_next_ready()
             completed_requests.extend(outs)
             num_completed_requests += len(outs)
-        pbar.update(len(completed_requests) - num_completed_requests)
+        pbar.update(len(completed_requests))
     pbar.close()
     end_time = time.time()
     total_elapsed_time = end_time - start_time
