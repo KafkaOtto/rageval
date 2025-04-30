@@ -74,7 +74,7 @@ def get_accuracies_latencies(
 
     prompts = dataset["query"]
     answers = dataset["answer"]
-    max_num_completed_requests = 5
+    max_num_completed_requests = 3
 
     start_time = time.time()
     pbar = tqdm(total=max_num_completed_requests)
