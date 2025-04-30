@@ -74,7 +74,7 @@ def get_accuracies_latencies(
 
     prompts = dataset["query"]
     answers = dataset["answer"]
-    max_num_completed_requests = 3
+    max_num_completed_requests = len(prompts)
 
     start_time = time.time()
     pbar = tqdm(total=max_num_completed_requests)
@@ -224,7 +224,7 @@ def save_results(output_dir,
 def save_energy_results(output_dir,
                  energy_filename,
                  summary_metrics):
-    full_path = output_dir / energy_filename
+    full_path = output_dir / f"{energy_filename}.json"
     start_time = summary_metrics["start_time"]
     end_time = summary_metrics["end_time"]
     collect_energy(start_time = start_time,
