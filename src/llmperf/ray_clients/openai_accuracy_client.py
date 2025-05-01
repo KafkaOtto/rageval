@@ -84,11 +84,11 @@ class OpenaiAccuracyClient(LLMClient):
         return messages
 
     def llm_request(self, request_config: RequestConfig) -> Dict[str, Any]:
-        if request_config.prompt == "I don't know":
-            return "It is I don't know", 0, request_config
         max_retries = 5
         prompt = request_config.prompt
         prompt, prompt_len = prompt
+        # if request_config.prompt == "I don't know":
+        #     return "It is I don't know", 0, request_config
         for attempt in range(max_retries):
             try:
                 response = self.openai.chat.completions.create(

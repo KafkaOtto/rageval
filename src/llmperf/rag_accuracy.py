@@ -118,8 +118,13 @@ def run_file(model: str,
                     prompt=(prompt, len(prompt)),
                     llm_api=llm_api,
                 )
-                req_launcher.launch_requests(request_config)
-                outs = req_launcher.get_next_ready()
+                if prediction == "I don't know.":
+                    explanation = "The prediction is not sure about the answer."
+                    score = 0.0
+                    outs = (explanation, score, request_config)
+                else:
+                    req_launcher.launch_requests(request_config)
+                    outs = req_launcher.get_next_ready()
                 logger.info(f"outs: {outs}")
                 completed_requests.extend(outs)
         raw_results = load_raw_results(completed_requests)
