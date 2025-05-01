@@ -121,7 +121,7 @@ def run_file(model: str,
                 if prediction == "I don't know.":
                     explanation = "The prediction is not sure about the answer."
                     score = 0.0
-                    outs = (explanation, score, request_config)
+                    outs = [(explanation, score, request_config)]
                 else:
                     req_launcher.launch_requests(request_config)
                     outs = req_launcher.get_next_ready()
