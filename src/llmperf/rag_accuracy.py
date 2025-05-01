@@ -103,8 +103,6 @@ def run_file(model: str,
             , total=len(responses_files), desc="Loading Files"
     )):
         iteration = iteration + 1
-        if iteration == 2:
-            break
         completed_requests = []
         with open(json_filename, "r", encoding="utf-8") as json_file:
             responses = json.load(json_file)
