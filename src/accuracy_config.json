@@ -1,6 +1,6 @@
 {
   "model": "deepseek-chat",
-  "num_concurrent_requests": 2,
+  "num_concurrent_requests": 5,
   "timeout": 9000000,
   "input_dir": "results",
   "output_dir": "results",
