@@ -271,10 +271,11 @@ if __name__ == "__main__":
         ),
     )
     args = parser.parse_args()
-    if args.config:
-        config_data = load_config(args.config)
-        parser.set_defaults(**config_data)
-    args = parser.parse_args()
+    print(f"model: arg.input: {args.input_dir}")
+    # if args.config:
+    #     config_data = load_config(args.config)
+    #     parser.set_defaults(**config_data)
+    # args = parser.parse_args()
     run_batch(
         llm_api=args.llm_api,
         model=args.model,
@@ -282,6 +283,7 @@ if __name__ == "__main__":
         num_concurrent_requests=args.num_concurrent_requests,
         additional_sampling_params=args.additional_sampling_params,
         batch_size=args.batch_size,
+        treatment_id=args.treatment_id,
         input_dir=args.input_dir,
         output_dir=args.output_dir,
         rerun=args.rerun
