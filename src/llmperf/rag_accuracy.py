@@ -118,7 +118,7 @@ def run_file(model: str,
                     prompt=(prompt, len(prompt)),
                     llm_api=llm_api,
                 )
-                if prediction == "I don't know.":
+                if prediction == "I don't know." or prediction == "I don't know":
                     explanation = "The prediction is not sure about the answer."
                     score = 0.0
                     outs = [(explanation, score, request_config)]
