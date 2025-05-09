@@ -7,6 +7,7 @@ export PYTHONPATH="$(pwd):$PYTHONPATH"
 mkdir -p logs
 
 # Run the first job in foreground via nohup
+start_time=$(date +%s)
 echo "Starting warmup job..."
 nohup python3 llmperf/rag_evaluation_clients.py \
   --model "RAG" \
@@ -20,6 +21,9 @@ nohup python3 llmperf/rag_evaluation_clients.py \
   --llm-api "RAG" \
   > logs/base_model_warmup_2.log 2>&1
 
+end_time=$(date +%s)
+elapsed=$((end_time - start_time))
+echo "Warmup job completed in $elapsed seconds."
 echo "Warmup job completed. Starting prod job..."
 
 # Run the second job after the first finishes
