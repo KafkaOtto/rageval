@@ -10,7 +10,6 @@ def initialize_batch():
 
 def load_data(dataset_path):
     try:
-        cnt = 0
         with bz2.open(dataset_path, "rt") as file:
             data = initialize_batch()
             for line in file:
@@ -18,9 +17,6 @@ def load_data(dataset_path):
                     item = json.loads(line)
                     for key in data:
                         data[key].append(item[key])
-                    cnt += 1
-                    if cnt == 2:
-                        break
                 except json.JSONDecodeError:
                     logger.warn("Warning: Failed to decode a line.")
             return data

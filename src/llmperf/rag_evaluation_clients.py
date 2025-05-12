@@ -19,7 +19,7 @@ from llmperf.utils import (
 from llmperf.energy_collection import collect_energy
 from tqdm import tqdm
 
-from data_loader import load_data_in_batches
+from data_loader import load_data
 
 def load_raw_results(complete_requests):
     raw_results = []
@@ -101,8 +101,8 @@ def get_accuracies_latencies(
         if not (iter % num_concurrent_requests) or iter == max_num_completed_requests:
             outs = req_launcher.get_next_ready()
             completed_requests.extend(outs)
-            num_completed_requests += len(outs)
-        pbar.update(len(completed_requests))
+        pbar.update(len(completed_requests) - num_completed_requests)
+        num_completed_requests = len(completed_requests)
     pbar.close()
     end_time = time.time()
     total_elapsed_time = end_time - start_time
@@ -131,8 +131,43 @@ def get_accuracies_latencies(
 
     return summary_metrics, raw_results
 
+def run_job(model: str,
+        filename: str,
+        dataset: Dict[str, Any] = None,
+        additional_sampling_params: Optional[Dict[str, Any]] = None,
+        num_concurrent_requests: int = 1,
+        test_timeout_s=90,
+        llm_api="RAG",
+        output_dir: str = None,
+        rerun: bool = False,
+              ):
+    # precheck if results already exist
+    summary_file_name = f"{filename}_summary"
+    responses_file_name = f"{filename}_responses"
+    energy_file_name = f"{filename}_energy"
+    if not rerun and check_results_exist_and_pass(output_dir, summary_file_name, responses_file_name):
+        print(f"current batch: {filename} is successful")
+        return
+
+    summary_metrics, raw_results = get_accuracies_latencies(
+        model=model,
+        llm_api=llm_api,
+        test_timeout_s=test_timeout_s,
+        num_concurrent_requests=num_concurrent_requests,
+        additional_sampling_params=json.loads(additional_sampling_params),
+        dataset=dataset,
+    )
+
+    # save results
+    print("Warmup Summary metrics:")
+    print(summary_metrics)
+    print("Warmup Raw results:")
+    print(raw_results)
+    save_results(output_dir, summary_file_name, responses_file_name, raw_results, summary_metrics)
+
 def run_batch(model: str,
-        input_dir: str,
+        warmup_input_dir: str,
+        prod_input_dir: str,
         additional_sampling_params: Optional[Dict[str, Any]] = None,
         num_concurrent_requests: int = 1,
         test_timeout_s=90,
@@ -142,35 +177,26 @@ def run_batch(model: str,
         output_dir: str = None,
         rerun: bool = False,
               ):
-    batch_id = -1
-    for batch in tqdm(load_data_in_batches(input_dir, batch_size), desc="Loading Batches"):
-        batch_id += 1
-        if not batch or len(batch['query']) == 0:
-            continue
-        # precheck if results already exist
-        filename = f"{model}_batch_{batch_size}_{batch_id}_{treatment_id}"
-        summary_file_name = f"{filename}_summary"
-        responses_file_name = f"{filename}_responses"
-        energy_file_name = f"{filename}_energy"
-        if not rerun and check_results_exist_and_pass(output_dir, summary_file_name, responses_file_name):
-            print(f"current batch: {filename} is successful")
-            continue
-
-        summary_metrics, raw_results = get_accuracies_latencies(
-            model=model,
-            llm_api=llm_api,
-            test_timeout_s=test_timeout_s,
+    warmup_data = load_data(warmup_input_dir)
+    prod_data = load_data(prod_input_dir)
+    # precheck if results already exist
+    warmup_filename = f"{model}_batch_{batch_size}_{treatment_id}_warmup"
+    prod_filename = f"{model}_batch_{batch_size}_{treatment_id}_prod"
+    run_job(model=model, filename=warmup_filename, dataset=warmup_data,
+            additional_sampling_params=additional_sampling_params,
             num_concurrent_requests=num_concurrent_requests,
-            additional_sampling_params=json.loads(additional_sampling_params),
-            dataset=batch,
-        )
-
-        # save results
-        print("Summary metrics:")
-        print(summary_metrics)
-        print("Raw results:")
-        print(raw_results)
-        save_results(output_dir, energy_file_name, summary_file_name, responses_file_name, raw_results, summary_metrics)
+            test_timeout_s=test_timeout_s,
+            llm_api=llm_api,
+            output_dir=output_dir,
+            rerun=rerun)
+    time.sleep(30)
+    run_job(model=model, filename=prod_filename, dataset=warmup_data,
+            additional_sampling_params=additional_sampling_params,
+            num_concurrent_requests=num_concurrent_requests,
+            test_timeout_s=test_timeout_s,
+            llm_api=llm_api,
+            output_dir=output_dir,
+            rerun=rerun)
 
 def check_results_exist_and_pass(output_dir,
                  summary_filename,
@@ -224,7 +250,7 @@ def save_results(output_dir,
 def save_energy_results(output_dir,
                  energy_filename,
                  summary_metrics):
-    full_path = output_dir / f"{energy_filename}.json"
+    full_path = output_dir / energy_filename
     start_time = summary_metrics["start_time"]
     end_time = summary_metrics["end_time"]
     collect_energy(start_time = start_time,
@@ -257,11 +283,11 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, help="The model to use for this load test.")
     parser.add_argument("--num-concurrent-requests", type=int, help="The number of concurrent requests to send.")
     parser.add_argument("--timeout", type=int, help="The amount of time to run the load test for.")
-    parser.add_argument("--input-dir", type=str, help="The directory to read the dataset from.")
+    parser.add_argument("--warmup-input-dir", type=str, help="The directory to read the dataset from.")
+    parser.add_argument("--prod-input-dir", type=str, help="The directory to read the dataset from.")
     parser.add_argument("--output-dir", type=str, help="The directory to save the results to.")
     parser.add_argument("--llm-api", type=str, help="The name of the LLM API to use.")
     parser.add_argument("--metadata", type=str, help="Metadata for the test, e.g. name=benchmark,version=1")
-    parser.add_argument("--batch-size", type=str, default=-1, help="Batch size to separate the dataset")
     parser.add_argument("--treatment-id", type=str, help="For output filename id")
     parser.add_argument("--rerun", type=bool, help="If rerun the experiment")
     parser.add_argument(
@@ -271,20 +297,18 @@ if __name__ == "__main__":
         ),
     )
     args = parser.parse_args()
-    print(f"model: arg.input: {args.input_dir}")
-    # if args.config:
-    #     config_data = load_config(args.config)
-    #     parser.set_defaults(**config_data)
-    # args = parser.parse_args()
+    if args.config:
+        config_data = load_config(args.config)
+        parser.set_defaults(**config_data)
+    args = parser.parse_args()
     run_batch(
         llm_api=args.llm_api,
         model=args.model,
         test_timeout_s=args.timeout,
         num_concurrent_requests=args.num_concurrent_requests,
         additional_sampling_params=args.additional_sampling_params,
-        batch_size=args.batch_size,
-        treatment_id=args.treatment_id,
-        input_dir=args.input_dir,
+        warmup_input_dir=args.warmup_input_dir,
+        prod_input_dir=args.prod_input_dir,
         output_dir=args.output_dir,
         rerun=args.rerun
     )
