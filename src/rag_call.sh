@@ -18,6 +18,6 @@ nohup python3 llmperf/rag_evaluation_clients.py \
   --metadata "name=benchmark,version=1" \
   --treatment-id "base_model_3" \
   --llm-api "RAG" \
-  > logs/base_model_3.log 2>&1
+  > logs/base_model_3.log 2>&1 &
 
 echo "Prod job started in background. Check logs in ./logs/"
