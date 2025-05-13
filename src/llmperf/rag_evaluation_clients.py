@@ -163,7 +163,7 @@ def run_job(model: str,
     print(summary_metrics)
     print("Warmup Raw results:")
     print(raw_results)
-    save_results(output_dir, summary_file_name, responses_file_name, raw_results, summary_metrics)
+    save_results(output_dir, energy_file_name, summary_file_name, responses_file_name, raw_results, summary_metrics)
 
 def run_batch(model: str,
         warmup_input_dir: str,
