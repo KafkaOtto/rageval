@@ -190,7 +190,7 @@ def run_batch(model: str,
             output_dir=output_dir,
             rerun=rerun)
     time.sleep(30)
-    run_job(model=model, filename=prod_filename, dataset=warmup_data,
+    run_job(model=model, filename=prod_filename, dataset=prod_data,
             additional_sampling_params=additional_sampling_params,
             num_concurrent_requests=num_concurrent_requests,
             test_timeout_s=test_timeout_s,
