@@ -172,7 +172,6 @@ def run_batch(model: str,
         num_concurrent_requests: int = 1,
         test_timeout_s=90,
         llm_api="RAG",
-        batch_size: int = 200,
         treatment_id: int = 1,
         output_dir: str = None,
         rerun: bool = False,
@@ -180,8 +179,8 @@ def run_batch(model: str,
     warmup_data = load_data(warmup_input_dir)
     prod_data = load_data(prod_input_dir)
     # precheck if results already exist
-    warmup_filename = f"{model}_batch_{batch_size}_{treatment_id}_warmup"
-    prod_filename = f"{model}_batch_{batch_size}_{treatment_id}_prod"
+    warmup_filename = f"{model}_batch_{treatment_id}_warmup"
+    prod_filename = f"{model}_batch_{treatment_id}_prod"
     run_job(model=model, filename=warmup_filename, dataset=warmup_data,
             additional_sampling_params=additional_sampling_params,
             num_concurrent_requests=num_concurrent_requests,
@@ -306,6 +305,7 @@ if __name__ == "__main__":
         model=args.model,
         test_timeout_s=args.timeout,
         num_concurrent_requests=args.num_concurrent_requests,
+        treatment_id=args.treatment_id,
         additional_sampling_params=args.additional_sampling_params,
         warmup_input_dir=args.warmup_input_dir,
         prod_input_dir=args.prod_input_dir,
