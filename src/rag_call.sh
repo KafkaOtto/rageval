@@ -6,7 +6,7 @@ if [ -z "$TREATMENT_ID" ] || [ -z "$1" ]; then
 fi
 
 NUM_RUNS="$1"
-COOLDOWN_SECONDS=30  # Set your desired cooldown here
+COOLDOWN_SECONDS=500  # Set your desired cooldown here
 
 OUTPUT_BASE_DIR="output/${TREATMENT_ID}"
 LOG_DIR="logs"
