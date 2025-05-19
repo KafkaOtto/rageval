@@ -1,29 +1,46 @@
 #!/bin/bash
-if [ -z "$TREATMENT_ID" ]; then
-  echo "Usage: $0 <treatment-id>"
+
+if [ -z "$TREATMENT_ID" ] || [ -z "$1" ]; then
+  echo "Usage: TREATMENT_ID=<treatment-id> $0 <num-runs>"
   exit 1
 fi
 
-OUTPUT_DIR="output/${TREATMENT_ID}"
-LOG_DIR="logs"
-LOG_FILE="${LOG_DIR}/${TREATMENT_ID}.log"
+NUM_RUNS="$1"
+COOLDOWN_SECONDS=30  # Set your desired cooldown here
 
-export RAG_URL="http://172.18.0.2:30815/chat-api/external/rag"
+OUTPUT_BASE_DIR="output/${TREATMENT_ID}"
+LOG_DIR="logs"
+mkdir -p "${OUTPUT_BASE_DIR}" "${LOG_DIR}"
+
+export RAG_URL="http://172.18.0.2:31402/chat-api/external/rag"
 export PYTHONPATH="$(pwd):$PYTHONPATH"
 
-mkdir -p "${OUTPUT_DIR}" "${LOG_DIR}"
+for (( i=1; i<=NUM_RUNS; i++ ))
+do
+  OUTPUT_DIR="${OUTPUT_BASE_DIR}/run_$i"
+  LOG_FILE="${LOG_DIR}/${TREATMENT_ID}_run_${i}.log"
 
-echo "Starting job with treatment ID: ${TREATMENT_ID}..."
-nohup python3 llmperf/rag_evaluation_clients.py \
-  --model "RAG" \
-  --num-concurrent-requests 1 \
-  --timeout 9000000 \
-  --warmup-input-dir "../dataset/crag_task_1_and_2_dev_v4_warmup.jsonl.bz2" \
-  --prod-input-dir "../dataset/crag_task_1_and_2_dev_v4_prod.jsonl.bz2" \
-  --output-dir "${OUTPUT_DIR}" \
-  --metadata "name=benchmark,version=1" \
-  --treatment-id "${TREATMENT_ID}" \
-  --llm-api "RAG" \
-  > "${LOG_FILE}" 2>&1 &
+  mkdir -p "${OUTPUT_DIR}"
 
-echo "Prod job started. Logs: ${LOG_FILE}"
+  echo "[$(date)] Starting run $i of $NUM_RUNS..."
+  python3 llmperf/rag_evaluation_clients.py \
+    --model "RAG" \
+    --num-concurrent-requests 1 \
+    --timeout 9000000 \
+    --warmup-input-dir "../dataset/crag_task_1_and_2_dev_v4_warmup.jsonl.bz2" \
+    --prod-input-dir "../dataset/crag_task_1_and_2_dev_v4_prod.jsonl.bz2" \
+    --output-dir "${OUTPUT_DIR}" \
+    --metadata "name=benchmark,version=1" \
+    --treatment-id "${TREATMENT_ID}" \
+    --llm-api "RAG" \
+    > "${LOG_FILE}" 2>&1
+
+  echo "[$(date)] Run $i finished. Logs: ${LOG_FILE}"
+
+  if [ "$i" -lt "$NUM_RUNS" ]; then
+    echo "Cooling down for ${COOLDOWN_SECONDS} seconds..."
+    sleep $COOLDOWN_SECONDS
+  fi
+done
+
+echo "[$(date)] All $NUM_RUNS runs completed."
