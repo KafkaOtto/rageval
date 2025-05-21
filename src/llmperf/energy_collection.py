@@ -1,4 +1,14 @@
 import subprocess
+import os
+
+kepler_metrics = {
+    "total": "kepler_container_joules_total",
+    "package": "kepler_container_package_joules_total",
+    "dram": "kepler_container_dram_joules_total",
+    "other": "kepler_container_other_joules_total",
+    "gpu": "kepler_container_gpu_joules_total"
+}
+
 
 def find_pod(pod_name_start):
     result = subprocess.run(
@@ -13,19 +23,32 @@ def find_pod(pod_name_start):
             return pod_name
     return None
 
-def construct_prometheus_command(pod_name, start_time, end_time, filename, step="1s"):
-    if start_time is None:
-        raise ValueError(f"Start time must be specified")
-    if end_time is None:
-        raise ValueError(f"End time must be specified")
-    return f"kubectl exec -n monitoring {pod_name} -- wget -qO- 'http://localhost:9090/api/v1/query_range?query=kepler_container_joules_total&start={start_time}&end={end_time}&step=1' > {filename}"
 
-def collect_energy(pod_name_start = 'prometheus-prometheus-kube-prometheus-prometheus', start_time = None, end_time = None, filename = None, step="1s"):
+def add_postfix_to_filename(file_path, postfix):
+    directory, filename = os.path.split(file_path)
+    name, ext = os.path.splitext(filename)
+    new_filename = f"{name}_{postfix}{ext}"
+    return os.path.join(directory, new_filename)
+
+
+def construct_prometheus_command(pod_name, metric, start_time, end_time, filename, step="1"):
+    if not start_time or not end_time:
+        raise ValueError("Start and end time must be specified")
+    url = f"http://localhost:9090/api/v1/query_range?query={metric}&start={start_time}&end={end_time}&step={step}"
+    return f"kubectl exec -n monitoring {pod_name} -- wget -qO- '{url}' > {filename}"
+
+
+def collect_energy(pod_name_start='prometheus-prometheus-kube-prometheus-prometheus', start_time=None, end_time=None,
+                   filename=None, step="1"):
     if filename is None:
-        raise ValueError(f"Filename must be specified")
+        raise ValueError("Filename must be specified")
+
     pod_name = find_pod(pod_name_start)
     if pod_name is None:
         raise ValueError(f"Could not find pod with name starting with {pod_name_start}")
-    command = construct_prometheus_command(pod_name, start_time, end_time, filename, step)
-    print(f"Executing command: {command}")
-    subprocess.run(command, shell=True, check=True)
+
+    for postfix, metric in kepler_metrics.items():
+        output_filename = add_postfix_to_filename(filename, postfix)
+        command = construct_prometheus_command(pod_name, metric, start_time, end_time, output_filename, step)
+        print(f"Executing command for {postfix}: {command}")
+        subprocess.run(command, shell=True, check=True)
