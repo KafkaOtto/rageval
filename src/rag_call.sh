@@ -8,7 +8,7 @@ fi
 NUM_RUNS="$1"
 COOLDOWN_SECONDS=500
 
-OUTPUT_BASE_DIR="output/${TREATMENT_ID}"
+OUTPUT_BASE_DIR="output_with_ram/${TREATMENT_ID}"
 LOG_DIR="logs"
 mkdir -p "${OUTPUT_BASE_DIR}" "${LOG_DIR}"
 
