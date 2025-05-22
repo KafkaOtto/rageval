@@ -111,15 +111,35 @@ def run_file(model: str,
                                                       )):
                 query = response['request_config']['prompt']
                 prediction = response['generated_text']
+                prediction_lowercase = prediction.strip().rstrip('.').lower()
                 ground_truth = response['request_config']['metadata']['answer']
-                prompt = f"Question: {query}\n Ground truth: {ground_truth}\n Prediction: {prediction}\n"
+                ground_truth_lowercase = ground_truth.strip().rstrip('.').lower()
+                prompt = f"Question: {query}\n Ground truth: {ground_truth_lowercase}\n Prediction: {prediction_lowercase}\n"
                 request_config = RequestConfig(
                     model=model,
                     prompt=(prompt, len(prompt)),
                     llm_api=llm_api,
                 )
-                if prediction == "I don't know." or prediction == "I don't know":
+                if prediction_lowercase == "i don't know." or prediction_lowercase == "i don't know":
                     explanation = "The prediction is not sure about the answer."
+                    score = -1.0
+                    outs = [(explanation, score, request_config)]
+                elif prediction_lowercase == ground_truth_lowercase:
+                    explanation = "The prediction is correct."
+                    score = 1.0
+                    outs = [(explanation, score, request_config)]
+                elif "invalid" in prediction_lowercase and "invalid" in ground_truth_lowercase:
+                    explanation = "The prediction is correct in hallucination."
+                    score = 1.0
+                    outs = [(explanation, score, request_config)]
+                elif "invalid" in prediction_lowercase and "invalid" not in ground_truth_lowercase:
+                    # hallucination
+                    explanation = "The prediction is incorrect in hallucination."
+                    score = 0.0
+                    outs = [(explanation, score, request_config)]
+                elif "invalid" not in prediction_lowercase and "invalid" in ground_truth_lowercase:
+                    # hallucination
+                    explanation = "The prediction is incorrect in hallucination."
                     score = 0.0
                     outs = [(explanation, score, request_config)]
                 else:
