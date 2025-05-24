@@ -14,6 +14,7 @@ fi
 
 OUTPUT_BASE_DIR="output_with_ram/${TREATMENT_ID}"
 LOG_DIR="logs/accuracy"
+NUM_RUNS="$1"
 
 mkdir -p "${LOG_DIR}"
 
@@ -33,6 +34,5 @@ do
       --metadata "" \
       --llm-api "openai_acc" \
       > "${LOG_FILE}" 2>&1
-
 
 echo "======FORMAT====="
