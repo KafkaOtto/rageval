@@ -34,5 +34,6 @@ do
       --metadata "" \
       --llm-api "openai_acc" \
       > "${LOG_FILE}" 2>&1
+done
 
 echo "======FORMAT====="
