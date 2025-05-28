@@ -32,8 +32,8 @@ do
 
   mkdir -p "${OUTPUT_DIR}"
 
-  bash "$INSTALL_SCRIPT"
   bash "$DB_INIT_SCRIPT"
+  bash "$INSTALL_SCRIPT"
 
   echo "[$(date)] Starting run $i of $NUM_RUNS..."
   python3 llmperf/rag_evaluation_clients.py \
