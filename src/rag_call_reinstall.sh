@@ -13,7 +13,7 @@ technique="${TREATMENT_ID%_*}"
 RUNNING_BASE_DIR="/home/otto/thesis/projects/thesis_intern/running/${technique}/${variable}"
 DB_INIT_SCRIPT="${RUNNING_BASE_DIR}/db_init.sh"
 INSTALL_SCRIPT="${RUNNING_BASE_DIR}/install.sh"
-UNINSTALL_SCRIPT="${RUNNING_BASE_DIR}/un_install.sh"
+UNINSTALL_SCRIPT="${RUNNING_BASE_DIR}/uninstall.sh"
 
 OUTPUT_BASE_DIR="output_with_ram/${TREATMENT_ID}"
 LOG_DIR="logs"
