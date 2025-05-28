@@ -19,10 +19,6 @@ OUTPUT_BASE_DIR="output_with_ram/${TREATMENT_ID}"
 LOG_DIR="logs"
 mkdir -p "${OUTPUT_BASE_DIR}" "${LOG_DIR}"
 
-BACKEND_PORT=$(kubectl get svc chat-backend-springboot-helm-chart -o jsonpath='{.spec.ports[0].nodePort}')
-NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
-export RAG_URL="http://${NODE_IP}:${BACKEND_PORT}/chat-api/external/rag"
-
 export PYTHONPATH="$(pwd):$PYTHONPATH"
 
 for (( i=1; i<=NUM_RUNS; i++ ))
@@ -34,6 +30,11 @@ do
 
   bash "$DB_INIT_SCRIPT"
   bash "$INSTALL_SCRIPT"
+
+  BACKEND_PORT=$(kubectl get svc chat-backend-springboot-helm-chart -o jsonpath='{.spec.ports[0].nodePort}')
+  NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+  export RAG_URL="http://${NODE_IP}:${BACKEND_PORT}/chat-api/external/rag"
+
 
   echo "[$(date)] Starting run $i of $NUM_RUNS..."
   python3 llmperf/rag_evaluation_clients.py \
