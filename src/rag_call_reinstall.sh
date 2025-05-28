@@ -8,8 +8,8 @@ fi
 NUM_RUNS="$1"
 COOLDOWN_SECONDS=500
 
-technique="${TREATMENT_ID##*_}"
-variable="${TREATMENT_ID%_*}"
+variable="${TREATMENT_ID##*_}"
+technique="${TREATMENT_ID%_*}"
 RUNNING_BASE_DIR="/home/otto/thesis/projects/thesis_intern/running/${technique}/${variable}"
 DB_INIT_SCRIPT="${RUNNING_BASE_DIR}/db_init.sh"
 INSTALL_SCRIPT="${RUNNING_BASE_DIR}/install.sh"
