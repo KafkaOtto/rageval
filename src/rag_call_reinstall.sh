@@ -51,12 +51,13 @@ do
 
   echo "[$(date)] Run $i finished. Logs: ${LOG_FILE}"
 
+  bash "$UNINSTALL_SCRIPT"
+
   if [ "$i" -lt "$NUM_RUNS" ]; then
     echo "Cooling down for ${COOLDOWN_SECONDS} seconds..."
     sleep "$COOLDOWN_SECONDS"
   fi
 
-  bash "$UNINSTALL_SCRIPT"
 done
 
 echo "[$(date)] All $NUM_RUNS runs completed."
