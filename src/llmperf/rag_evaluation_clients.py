@@ -111,7 +111,7 @@ def get_accuracies_latencies(
 
     print(f"Results for token benchmark for {model} queried with the {llm_api} api.\n")
 
-    print(f"completed requests: {completed_requests}")
+    # print(f"completed requests: {completed_requests}")
     raw_results, num_errored_requests, num_mismatched_requests = load_raw_results(completed_requests)
     summary_metrics = {}
     summary_metrics["start_time"] = start_time
@@ -161,8 +161,8 @@ def run_job(model: str,
     # save results
     print("Warmup Summary metrics:")
     print(summary_metrics)
-    print("Warmup Raw results:")
-    print(raw_results)
+    # print("Warmup Raw results:")
+    # print(raw_results)
     save_results(output_dir, energy_file_name, summary_file_name, responses_file_name, raw_results, summary_metrics)
 
 def run_batch(model: str,
