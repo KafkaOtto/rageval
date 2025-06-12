@@ -1,11 +1,12 @@
 #!/bin/bash
 
-if [ -z "$TREATMENT_ID" ] || [ -z "$1" ]; then
-  echo "Usage: TREATMENT_ID=<treatment-id> $0 <num-runs>"
+if [ -z "$TREATMENT_ID" ] || [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: TREATMENT_ID=<treatment-id> $0 <start-num> $1 <end-num>"
   exit 1
 fi
 
-NUM_RUNS="$1"
+NUM_START="$1"
+NUM_END="$2"
 COOLDOWN_SECONDS=500
 
 variable="${TREATMENT_ID##*_}"
@@ -21,7 +22,7 @@ mkdir -p "${OUTPUT_BASE_DIR}" "${LOG_DIR}"
 
 export PYTHONPATH="$(pwd):$PYTHONPATH"
 
-for (( i=1; i<=NUM_RUNS; i++ ))
+for (( i=NUM_START; i<=NUM_END; i++ ))
 do
   OUTPUT_DIR="${OUTPUT_BASE_DIR}/run_$i"
   LOG_FILE="${LOG_DIR}/${TREATMENT_ID}_run_${i}.log"
