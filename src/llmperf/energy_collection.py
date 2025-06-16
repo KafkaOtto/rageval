@@ -31,7 +31,7 @@ def add_postfix_to_filename(file_path, postfix):
     return os.path.join(directory, new_filename)
 
 
-def construct_prometheus_command(pod_name, metric, start_time, end_time, filename, step="1"):
+def construct_prometheus_command(pod_name, metric, start_time, end_time, filename, step="5"):
     if not start_time or not end_time:
         raise ValueError("Start and end time must be specified")
     url = f"http://localhost:9090/api/v1/query_range?query={metric}&start={start_time}&end={end_time}&step={step}"
