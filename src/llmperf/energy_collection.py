@@ -39,7 +39,7 @@ def construct_prometheus_command(pod_name, metric, start_time, end_time, filenam
 
 
 def collect_energy(pod_name_start='prometheus-prometheus-kube-prometheus-prometheus', start_time=None, end_time=None,
-                   filename=None, step="1"):
+                   filename=None, step="5"):
     if filename is None:
         raise ValueError("Filename must be specified")
 
