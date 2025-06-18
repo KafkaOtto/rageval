@@ -87,6 +87,7 @@ class OpenaiAccuracyClient(LLMClient):
         max_retries = 5
         prompt = request_config.prompt
         prompt, prompt_len = prompt
+        explanation, score = "LLM request failed", -1
         # if request_config.prompt == "I don't know":
         #     return "It is I don't know", 0, request_config
         for attempt in range(max_retries):

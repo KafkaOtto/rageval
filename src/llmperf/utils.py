@@ -143,3 +143,48 @@ def flatten_dict(d, parent_key="", sep="_"):
         else:
             items.append((new_key, v))
     return dict(items)
+
+def load_answer_score_mapping(response_file: str, accuracy_file: str):
+    answer_score_mapping = {}
+
+    with open(response_file, "r") as response_f:
+        responses = json.load(response_f)
+
+    with open(accuracy_file, "r") as accuracy_f:
+        accuracies = json.load(accuracy_f)
+
+    print("query size", len(responses))
+
+    for response, accuracy in zip(responses, accuracies):
+        answer = response["generated_text"]
+        score = accuracy["score"]
+        question = response["request_config"]["prompt"][0]
+        explanation = accuracy["explanation"]
+
+        answer_lowercase = str(answer).strip().rstrip('.').lower()
+
+        if question not in answer_score_mapping:
+            answer_score_mapping[question] = []
+
+        answer_score_mapping[question].append({
+            "score": score,
+            "answer": answer_lowercase,
+            "explanation": explanation,
+            "request_config": accuracy["request_config"],
+        })
+    return answer_score_mapping
+
+
+def check_existing_score(query, prediction, answer_score):
+
+    mapping_value = answer_score.get(query)
+    if mapping_value:
+        prediction_normalized = str(prediction).strip().rstrip('.').lower()
+        for value in mapping_value:
+            if value["answer"] == prediction_normalized:
+                return value["explanation"], value["score"], value["request_config"]
+    return None
+
+if __name__ == '__main__':
+    answer_score_mapping = {}
+    check_existing_score("a", "b", answer_score_mapping)

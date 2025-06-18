@@ -20,14 +20,11 @@ from llmperf.common import SUPPORTED_APIS, construct_clients
 
 from llmperf.models import RequestConfig
 from llmperf.requests_launcher import RequestsLauncher
-from llmperf.utils import (
-    LLMPerfResults,
-    sample_random_positive_int,
-)
+from llmperf.utils import load_answer_score_mapping, check_existing_score
 from tqdm import tqdm
 
 def load_from_result_dir(input_dir: str):
-    json_files = glob.glob(f"{input_dir}/*_responses.json")
+    json_files = glob.glob(f"{input_dir}/*_prod_responses.json")
     print(f"Found {len(json_files)} json files in {input_dir}")
     return json_files
 
@@ -63,7 +60,7 @@ def load_raw_results(complete_requests):
         raw_results.append(
             {
                 "score": score,
-                "explanation": score,
+                "explanation": explanation,
                 "request_config": dict(completed_request_config),
             }
         )
@@ -98,7 +95,8 @@ def run_file(model: str,
 
     start_time = time.monotonic()
     iteration = 0
-
+    answer_score = load_answer_score_mapping(additional_sampling_params["response_file"], additional_sampling_params["accuracy_file"])
+    # answer_score= {"a": []}
     for _idx, json_filename in enumerate(tqdm(responses_files
             , total=len(responses_files), desc="Loading Files"
     )):
@@ -111,16 +109,19 @@ def run_file(model: str,
                                                       )):
                 query = response['request_config']['prompt']
                 prediction = response['generated_text']
-                prediction_lowercase = prediction.strip().rstrip('.').lower()
+                prediction_lowercase = str(prediction).strip().rstrip('.').lower()
                 ground_truth = response['request_config']['metadata']['answer']
-                ground_truth_lowercase = ground_truth.strip().rstrip('.').lower()
+                ground_truth_lowercase = str(ground_truth).strip().rstrip('.').lower()
                 prompt = f"Question: {query}\n Ground truth: {ground_truth_lowercase}\n Prediction: {prediction_lowercase}\n"
                 request_config = RequestConfig(
                     model=model,
                     prompt=(prompt, len(prompt)),
                     llm_api=llm_api,
                 )
-                if prediction_lowercase == "i don't know." or prediction_lowercase == "i don't know":
+                existing_outs = check_existing_score(query[0], prediction_lowercase, answer_score)
+                if existing_outs is not None:
+                    outs = [existing_outs]
+                elif prediction_lowercase == "i don't know." or prediction_lowercase == "i don't know":
                     explanation = "The prediction is not sure about the answer."
                     score = -1.0
                     outs = [(explanation, score, request_config)]
@@ -183,6 +184,8 @@ if __name__ == '__main__':
         config_data = load_config(args.config)
         parser.set_defaults(**config_data)
     args = parser.parse_args()
+    args.additional_sampling_params = json.loads(args.additional_sampling_params)
+
     run_file(model=args.model,
              additional_sampling_params=args.additional_sampling_params,
              num_concurrent_requests=args.num_concurrent_requests,
