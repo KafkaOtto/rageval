@@ -1,12 +1,13 @@
 #!/bin/bash
 
-if [ -z "$TREATMENT_ID" ] || [ -z "$1" ] || [ -z "$2" ]; then
-  echo "Usage: TREATMENT_ID=<treatment-id> $0 <start-num> $1 <end-num>"
+if [ -z "$3" ] || [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: $0 <start-num> $1 <end-num> $1 <treatment-id>"
   exit 1
 fi
 
 NUM_START="$1"
 NUM_END="$2"
+TREATMENT_ID="$3"
 COOLDOWN_SECONDS=500
 
 variable="${TREATMENT_ID##*_}"
