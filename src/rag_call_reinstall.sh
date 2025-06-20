@@ -38,7 +38,7 @@ do
   export RAG_URL="http://${NODE_IP}:${BACKEND_PORT}/chat-api/external/rag"
 
 
-  echo "[$(date)] Starting run $i of $NUM_RUNS..."
+  echo "[$(date)] Starting run $i of $NUM_END..."
   python3 llmperf/rag_evaluation_clients.py \
     --model "RAG" \
     --num-concurrent-requests 1 \

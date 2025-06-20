@@ -8,18 +8,17 @@ from typing import Any, Dict, List, Optional, Tuple
 import ray
 
 from llmperf import common_metrics
-from llmperf.common import SUPPORTED_APIS, construct_clients
+from llmperf.common import construct_clients
 
 from llmperf.models import RequestConfig
 from llmperf.requests_launcher import RequestsLauncher
 from llmperf.utils import (
     LLMPerfResults,
-    sample_random_positive_int,
 )
 from llmperf.energy_collection import collect_energy
 from tqdm import tqdm
 
-from data_loader import load_data
+from llmperf.data_loader import load_data
 
 def load_raw_results(complete_requests):
     raw_results = []

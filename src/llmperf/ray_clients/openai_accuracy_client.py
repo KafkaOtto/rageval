@@ -1,18 +1,15 @@
-import json
 import os
-import time
+import re
 from typing import Any, Dict
 
 import ray
-import requests
 from loguru import logger
-
-from llmperf.ray_llm_client import LLMClient
-from llmperf.models import RequestConfig
-from llmperf import common_metrics
 from openai import APIConnectionError, OpenAI, RateLimitError
-import re
+
+from llmperf.models import RequestConfig
 from llmperf.prompts.templates import INSTRUCTIONS, IN_CONTEXT_EXAMPLES
+from llmperf.ray_llm_client import LLMClient
+
 
 @ray.remote
 class OpenaiAccuracyClient(LLMClient):

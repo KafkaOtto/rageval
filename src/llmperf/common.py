@@ -1,10 +1,4 @@
 from typing import List
-from llmperf.ray_clients.litellm_client import LiteLLMClient
-from llmperf.ray_clients.openai_chat_completions_client import (
-    OpenAIChatCompletionsClient,
-)
-# from llmperf.ray_clients.sagemaker_client import SageMakerClient
-# from llmperf.ray_clients.vertexai_client import VertexAIClient
 from llmperf.ray_clients.rag_client import RAGClient
 from llmperf.ray_llm_client import LLMClient
 from llmperf.ray_clients.openai_accuracy_client import OpenaiAccuracyClient
@@ -25,18 +19,10 @@ def construct_clients(llm_api: str, num_clients: int) -> List[LLMClient]:
 
     """
     print(f"Constructing {llm_api} clients...")
-    if llm_api == "openai":
-        clients = [OpenAIChatCompletionsClient.remote() for _ in range(num_clients)]
-    # elif llm_api == "sagemaker":
-    #     clients = [SageMakerClient.remote() for _ in range(num_clients)]
-    # elif llm_api == "vertexai":
-    #     clients = [VertexAIClient.remote() for _ in range(num_clients)]
-    elif llm_api == "RAG":
+    if llm_api == "RAG":
         clients = [RAGClient.remote() for _ in range(num_clients)]
     elif llm_api == "openai_acc":
         clients = [OpenaiAccuracyClient.remote() for _ in range(num_clients)]
-    elif llm_api in SUPPORTED_APIS:
-        clients = [LiteLLMClient.remote() for _ in range(num_clients)]
     else:
         raise ValueError(
             f"llm_api must be one of the supported LLM APIs: {SUPPORTED_APIS}"

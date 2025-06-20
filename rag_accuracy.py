@@ -1,27 +1,21 @@
+import argparse
 import glob
 import json
-import sys
-import argparse
 import os
-import ray
-from tqdm import tqdm
-from loguru import logger
-from openai import APIConnectionError, OpenAI, RateLimitError
-import re
-from pathlib import Path
-from llmperf.models import RequestConfig
-from typing import Any, Dict, List, Optional, Tuple
-
-import pandas as pd
 import time
+from pathlib import Path
+from typing import Any, Dict, Optional
 
-from llmperf import common_metrics
-from llmperf.common import SUPPORTED_APIS, construct_clients
+import ray
+from loguru import logger
+from openai import APIConnectionError, RateLimitError
+from tqdm import tqdm
 
+from llmperf.common import construct_clients
 from llmperf.models import RequestConfig
 from llmperf.requests_launcher import RequestsLauncher
 from llmperf.utils import load_answer_score_mapping, check_existing_score
-from tqdm import tqdm
+
 
 def load_from_result_dir(input_dir: str):
     json_files = glob.glob(f"{input_dir}/*_prod_responses.json")

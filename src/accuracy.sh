@@ -7,27 +7,28 @@ export OPENAI_API_KEY=sk-20e9f2df70c6442eba7eaf351222e061
 export PYTHONPATH=$(pwd):$PYTHONPATH
 
 
-if [ -z "$2" ] || [ -z "$1" ]; then
+if [ -z "$2" ] || [ -z "$1" ] || [ -z "$3" ]; then
   echo "Usage: $0 <num-runs> $1 <treatment_id>"
   exit 1
 fi
 
-TREATMENT_ID="$2"
-OUTPUT_BASE_DIR="output_with_ram/${TREATMENT_ID}"
+TREATMENT_ID="$1"
+OUTPUT_BASE_DIR="/Users/zhinuanguo/Documents/thesis/projects/internship/results/output_with_ram/${TREATMENT_ID}"
 LOG_DIR="logs/accuracy"
-NUM_RUNS="$1"
+START_NUM_RUNS="$2"
+END_NUM_RUNS="$3"
 
 mkdir -p "${LOG_DIR}"
 
-ADDITIONAL_SAMPLING_PARAMS="{\"response_file\": \"/Users/zhinuanguo/Downloads/rag_llmperf-add_rag/src/output_with_ram/t1_thresholds_0.68/run_1/RAG_batch_t1_threshold0.68_prod_responses.json\", \"accuracy_file\": \"/Users/zhinuanguo/Downloads/rag_llmperf-add_rag/src/output_with_ram/t1_thresholds_0.68/run_1/RAG_batch_t1_threshold0.68_prod_accuracies.json\"}"
+ADDITIONAL_SAMPLING_PARAMS="{\"response_file\": \"/Users/zhinuanguo/Documents/thesis/projects/internship/results/output_with_ram/t6_caching_prefix/run_1/RAG_batch_t6_caching_prefix_prod_responses.json\", \"accuracy_file\": \"/Users/zhinuanguo/Documents/thesis/projects/internship/results/output_with_ram/t6_caching_prefix/run_1/RAG_batch_t6_caching_prefix_prod_accuracies.json\"}"
 
-for (( i=1; i<=NUM_RUNS; i++ ))
+for (( i=START_NUM_RUNS; i<=END_NUM_RUNS; i++ ))
 do
   OUTPUT_DIR="${OUTPUT_BASE_DIR}/run_$i"
   INPUT_DIR="${OUTPUT_BASE_DIR}/run_$i"
   LOG_FILE="${LOG_DIR}/${TREATMENT_ID}_run_${i}_accuracy.log"
 
-  echo "[$(date)] Starting run $i of $NUM_RUNS..."
+  echo "[$(date)] Starting run $i of $END_NUM_RUNS..."
   python3 llmperf/rag_accuracy.py \
       --model "deepseek-chat" \
       --num-concurrent-requests 5 \
